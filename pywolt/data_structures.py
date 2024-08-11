@@ -339,9 +339,9 @@ class Item(BaseModel):
     return_policy: Optional[str]
     sell_by_weight_config: Optional[Dict[str, Any]]
     should_display_purchasable_balance: bool
-    tags: List[str]
-    unit_info: str
-    unit_price: UnitPrice
+    tags: List[Optional[Dict[str, Any]]]
+    unit_info: Optional[str]
+    unit_price: Optional[UnitPrice]
     variant: Optional[str]
 
 
