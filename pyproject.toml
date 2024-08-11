@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "pywolt"
-version = "0.1.0"
+version = "0.1.1b1"
 description = ""
-authors = ["Ilya Feldman <ilyafeldm@gmail.com>"]
+authors = ["Ilya Feldman <ilyafeldm@gmail.com>", "Andrei Kliuchnikov <andrewkliuchnikov@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]

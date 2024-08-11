@@ -1,5 +1,5 @@
 from typing import Dict
-from .data_structures import VenueData, MenuItem
+from .data_structures import VenueData, MenuItem, AssortmentResponse, CategoryItemsResponse
 import httpx as req
 
 
@@ -109,3 +109,17 @@ class Wolt:
         req.post(
             self.basket_endpoint, auth="Bearer " + self.access_token, data=basket_item
         )
+
+    @staticmethod
+    def get_venue_categories(venue_slug: str, language: str = "en") -> AssortmentResponse:
+        url = f"https://consumer-api.wolt.com/consumer-api/consumer-assortment/v1/venues/slug/{venue_slug}/assortment"
+
+        response = req.get(url, params={"language": language}).json()
+        return AssortmentResponse(**response)
+
+    @staticmethod
+    def get_category_items(venue_slug: str, category_slug: str, language: str = "en"):
+        url = f"https://consumer-api.wolt.com/consumer-api/consumer-assortment/v1/venues/slug/{venue_slug}/assortment/categories/slug/{category_slug}"
+        response = req.get(url, params={"language": language}).json()
+        return CategoryItemsResponse(**response)
+

@@ -231,3 +231,123 @@ class MenuItem(BaseModel):
             f"Price: {self.baseprice/100}₪\n"
             f"Availability: {'Available' if self.enabled else 'Not available'}\n"
         )
+
+
+class Language(BaseModel):
+    autotranslated: bool
+    language: str
+    name: str
+
+
+class AssortmentSubcategory(BaseModel):
+    id: str
+    description: str
+    images: List[Image]
+    name: str
+    slug: str
+    subcategories: List['AssortmentSubcategory']
+    item_ids: List[str]
+
+
+class Category(BaseModel):
+    id: str
+    description: str
+    images: List[Image]
+    name: str
+    slug: str
+
+
+class AssortmentCategory(Category):
+    subcategories: List[AssortmentSubcategory]
+    item_ids: List[str]
+
+
+class ComplianceInfo(BaseModel):
+    badges: List[str]
+    disclaimers: Optional[str]
+    how_search_works: Optional[str]
+    lowest_price_calculation_interval_in_days: int
+    should_display_original_price_for_unit_price: bool
+    should_display_price_by_subtracting_deposit: bool
+
+
+class AssortmentResponse(BaseModel):
+    assortment_id: str
+    loading_strategy: str
+    primary_language: str
+    selected_language: str
+    available_languages: List[Language]
+    compliance_info: ComplianceInfo
+    categories: List[AssortmentCategory]
+    items: List[str]
+    options: List[str]
+    variant_groups: List[str]
+
+
+class AvailableTime(BaseModel):
+    days: List[int]
+    start_time: int
+    end_time: int
+
+
+class Promotion(BaseModel):
+    basket: bool
+    venue: bool
+
+
+class UnitPrice(BaseModel):
+    base: int
+    original_price: Optional[int]
+    price: int
+    unit: str
+
+
+class Item(BaseModel):
+    id: str
+    advertising_info: Optional[str]
+    alcohol_permille: int
+    allowed_delivery_methods: List[str]
+    available_times: List[AvailableTime]
+    barcode_gtin: str
+    caffeine_info: Optional[str]
+    can_be_promoted: Promotion
+    checksum: str
+    description: str
+    deposit: Optional[str]
+    dietary_preferences: List[str]
+    disabled_info: Optional[str]
+    fulfillment_lead_time: Optional[str]
+    has_extra_info: bool
+    images: List[Image]
+    is_cutlery: bool
+    is_no_contact_delivery_allowed: bool
+    is_wolt_plus_only: bool
+    lowest_price: Optional[int]
+    max_quantity_per_purchase: Optional[int]
+    min_quantity_per_purchase: Optional[int]
+    name: str
+    options: List[str]
+    original_price: Optional[int]
+    price: int
+    purchasable_balance: int
+    restrictions: List[str]
+    return_policy: Optional[str]
+    sell_by_weight_config: Optional[str]
+    should_display_purchasable_balance: bool
+    tags: List[str]
+    unit_info: str
+    unit_price: UnitPrice
+    variant: Optional[str]
+
+
+class CategoryMetadata(BaseModel):
+    next_page_token: Optional[str]
+    page: int
+
+
+class CategoryItemsResponse(BaseModel):
+    category: Category
+    items: List[Item]
+    options: List[str]
+    variant_groups: List[str]
+    metadata: CategoryMetadata
