@@ -302,6 +302,11 @@ class UnitPrice(BaseModel):
     unit: str
 
 
+class RestrictionInfo(BaseModel):
+    type: str
+    age_limit: int
+
+
 class Item(BaseModel):
     id: str
     advertising_info: Optional[str]
@@ -330,7 +335,7 @@ class Item(BaseModel):
     original_price: Optional[int]
     price: int
     purchasable_balance: int
-    restrictions: List[str]
+    restrictions: List[RestrictionInfo]
     return_policy: Optional[str]
     sell_by_weight_config: Optional[str]
     should_display_purchasable_balance: bool
