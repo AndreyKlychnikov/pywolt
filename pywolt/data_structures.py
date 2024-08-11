@@ -320,8 +320,8 @@ class Item(BaseModel):
     description: str
     deposit: Optional[str]
     dietary_preferences: List[str]
-    disabled_info: Optional[str]
-    fulfillment_lead_time: Optional[str]
+    disabled_info: Optional[Dict[str, Any]]
+    fulfillment_lead_time: Optional[int]
     has_extra_info: bool
     images: List[Image]
     is_cutlery: bool
@@ -337,7 +337,7 @@ class Item(BaseModel):
     purchasable_balance: int
     restrictions: List[RestrictionInfo]
     return_policy: Optional[str]
-    sell_by_weight_config: Optional[str]
+    sell_by_weight_config: Optional[Dict[str, Any]]
     should_display_purchasable_balance: bool
     tags: List[str]
     unit_info: str
