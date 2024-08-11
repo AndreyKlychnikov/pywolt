@@ -304,7 +304,7 @@ class UnitPrice(BaseModel):
 
 class RestrictionInfo(BaseModel):
     type: str
-    age_limit: int
+    age_limit: Optional[int]
 
 
 class Item(BaseModel):
@@ -313,7 +313,7 @@ class Item(BaseModel):
     alcohol_permille: int
     allowed_delivery_methods: List[str]
     available_times: List[AvailableTime]
-    barcode_gtin: str
+    barcode_gtin: Optional[str]
     caffeine_info: Optional[str]
     can_be_promoted: Promotion
     checksum: str
@@ -331,10 +331,10 @@ class Item(BaseModel):
     max_quantity_per_purchase: Optional[int]
     min_quantity_per_purchase: Optional[int]
     name: str
-    options: List[str]
+    options: List[Dict[str, Any]]
     original_price: Optional[int]
     price: int
-    purchasable_balance: int
+    purchasable_balance: Optional[int]
     restrictions: List[RestrictionInfo]
     return_policy: Optional[str]
     sell_by_weight_config: Optional[Dict[str, Any]]
@@ -353,6 +353,6 @@ class CategoryMetadata(BaseModel):
 class CategoryItemsResponse(BaseModel):
     category: Category
     items: List[Item]
-    options: List[str]
+    options: List[Dict[str, Any]]
     variant_groups: List[str]
     metadata: CategoryMetadata
