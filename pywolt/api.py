@@ -1,5 +1,5 @@
 from typing import Dict
-from .data_structures import VenueData, MenuItem, AssortmentResponse, CategoryItemsResponse
+from .data_structures import VenueData, MenuItem, AssortmentResponse, CategoryItemsResponse, Item
 import httpx as req
 
 
@@ -118,8 +118,21 @@ class Wolt:
         return AssortmentResponse(**response)
 
     @staticmethod
-    def get_category_items(venue_slug: str, category_slug: str, language: str = "en"):
+    def get_category_items(venue_slug: str, category_slug: str, language: str = "en") -> list[Item]:
         url = f"https://consumer-api.wolt.com/consumer-api/consumer-assortment/v1/venues/slug/{venue_slug}/assortment/categories/slug/{category_slug}"
+        items = []
         response = req.get(url, params={"language": language}).json()
-        return CategoryItemsResponse(**response)
+        response = CategoryItemsResponse(**response)
+        items.extend(response.items)
+        while response.metadata.next_page_token:
+            response = req.get(
+                url,
+                params={
+                    "language": language,
+                    "page_token": response.metadata.next_page_token
+                }
+            ).json()
+            response = CategoryItemsResponse(**response)
+            items.extend(response.items)
+        return items
 
