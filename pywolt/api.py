@@ -1,5 +1,6 @@
 from typing import Dict
 from .data_structures import VenueData, MenuItem, AssortmentResponse, CategoryItemsResponse, Item
+import httpx
 from httpx import Client, BaseTransport
 
 
@@ -118,14 +119,18 @@ class Wolt:
     def get_venue_categories(self, venue_slug: str, language: str = "en") -> AssortmentResponse:
         url = f"https://consumer-api.wolt.com/consumer-api/consumer-assortment/v1/venues/slug/{venue_slug}/assortment"
 
-        response = self.httpx_client.get(url, params={"language": language}).json()
-        return AssortmentResponse(**response)
+        response = self.httpx_client.get(url, params={"language": language})
+        if response.status_code != httpx.codes.OK:
+            response.raise_for_status()
+        return AssortmentResponse(**response.json())
 
     def get_category_items(self, venue_slug: str, category_slug: str, language: str = "en") -> list[Item]:
         url = f"https://consumer-api.wolt.com/consumer-api/consumer-assortment/v1/venues/slug/{venue_slug}/assortment/categories/slug/{category_slug}"
         items = []
-        response = self.httpx_client.get(url, params={"language": language}).json()
-        response = CategoryItemsResponse(**response)
+        response = self.httpx_client.get(url, params={"language": language})
+        if response.status_code != httpx.codes.OK:
+            response.raise_for_status()
+        response = CategoryItemsResponse(**response.json())
         items.extend(response.items)
         while response.metadata.next_page_token:
             response = self.httpx_client.get(

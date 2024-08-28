@@ -34,13 +34,20 @@ class Throttler:
 
 
 class RateLimitedTransport(httpx.BaseTransport):
-    def __init__(self, throttler: Throttler, **kwargs):
+    def __init__(self, throttler: Throttler, max_attempts: int = 3, wait_time: int = 30, **kwargs):
         self._wrapper = httpx.HTTPTransport(**kwargs)
         self.throttler = throttler
+        self.max_attempts = max_attempts
+        self.wait_time = wait_time
 
-    def handle_request(self, request):
+    def handle_request(self, request, attempt: int = 0):
         with self.throttler:
             response = self._wrapper.handle_request(request)
+
+        if response.status_code == httpx.codes.TOO_MANY_REQUESTS and attempt < self.max_attempts:
+            time.sleep(self.wait_time)
+            return self.handle_request(request, attempt + 1)
+
         return response
 
     def close(self):
