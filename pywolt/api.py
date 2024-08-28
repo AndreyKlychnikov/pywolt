@@ -1,6 +1,6 @@
 from typing import Dict
 from .data_structures import VenueData, MenuItem, AssortmentResponse, CategoryItemsResponse, Item
-import httpx as req
+from httpx import Client, BaseTransport
 
 
 class Wolt:
@@ -9,6 +9,7 @@ class Wolt:
         self,
         lat: str,
         lon: str,
+        transport: BaseTransport = None,
         access_token: str | None = None,
         refresh_token: str | None = None,
     ) -> None:
@@ -20,6 +21,10 @@ class Wolt:
         )
         self.lat = lat
         self.lon = lon
+        if transport:
+            self.httpx_client = Client(transport=transport)
+        else:
+            self.httpx_client = Client()
         if refresh_token:
             auth_details = self.get_auth_details(refresh_token)
             self.refresh_token = auth_details["refresh_token"]
@@ -31,7 +36,7 @@ class Wolt:
     def get_venues(self) -> dict[str, VenueData]:
         return {
             item.get("title"): VenueData(**item)
-            for item in req.get(
+            for item in self.httpx_client.get(
                 self.consumer_endpoint + "pages/restaurants",
                 params={"lat": self.lat, "lon": self.lon},
             ).json()["sections"][1]["items"]
@@ -40,7 +45,7 @@ class Wolt:
     def get_menu(self, venue_slug: str) -> Dict[str, MenuItem]:
         return {
             item.get("name"): MenuItem(**item)
-            for item in req.get(
+            for item in self.httpx_client.get(
                 self.restaurant_endpoint
                 + "v4/venues/slug/"
                 + venue_slug
@@ -56,7 +61,7 @@ class Wolt:
     def search_venues(self, query: str) -> Dict[str, VenueData]:
         return {
             item.get("title"): VenueData(**item)
-            for item in req.post(
+            for item in self.httpx_client.post(
                 self.restaurant_endpoint + "v1/pages/search",
                 json={
                     "q": query,
@@ -70,7 +75,7 @@ class Wolt:
     def search_items(self, query: str) -> Dict[str, VenueData]:
         return {
             item.get("title"): VenueData(**item)
-            for item in req.post(
+            for item in self.httpx_client.post(
                 self.restaurant_endpoint + "v1/pages/search",
                 json={
                     "q": query,
@@ -82,7 +87,7 @@ class Wolt:
         }
 
     def get_auth_details(self, refresh_token: str) -> Dict[str, str]:
-        resp = req.post(
+        resp = self.httpx_client.post(
             self.auth_endpoint,
             data={
                 "refresh_token": refresh_token,
@@ -106,26 +111,24 @@ class Wolt:
             "venue_id": "5c51940046700c000a146181",
             "currency": "ILS",
         }
-        req.post(
+        self.httpx_client.post(
             self.basket_endpoint, auth="Bearer " + self.access_token, data=basket_item
         )
 
-    @staticmethod
-    def get_venue_categories(venue_slug: str, language: str = "en") -> AssortmentResponse:
+    def get_venue_categories(self, venue_slug: str, language: str = "en") -> AssortmentResponse:
         url = f"https://consumer-api.wolt.com/consumer-api/consumer-assortment/v1/venues/slug/{venue_slug}/assortment"
 
-        response = req.get(url, params={"language": language}).json()
+        response = self.httpx_client.get(url, params={"language": language}).json()
         return AssortmentResponse(**response)
 
-    @staticmethod
-    def get_category_items(venue_slug: str, category_slug: str, language: str = "en") -> list[Item]:
+    def get_category_items(self, venue_slug: str, category_slug: str, language: str = "en") -> list[Item]:
         url = f"https://consumer-api.wolt.com/consumer-api/consumer-assortment/v1/venues/slug/{venue_slug}/assortment/categories/slug/{category_slug}"
         items = []
-        response = req.get(url, params={"language": language}).json()
+        response = self.httpx_client.get(url, params={"language": language}).json()
         response = CategoryItemsResponse(**response)
         items.extend(response.items)
         while response.metadata.next_page_token:
-            response = req.get(
+            response = self.httpx_client.get(
                 url,
                 params={
                     "language": language,
@@ -135,4 +138,7 @@ class Wolt:
             response = CategoryItemsResponse(**response)
             items.extend(response.items)
         return items
+
+    def close(self):
+        self.httpx_client.close()
 
